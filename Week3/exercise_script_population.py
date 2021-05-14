@@ -22,23 +22,31 @@ plt.ion()
 # load datasets
 counties = gpd.read_file(r'C:\Users\Ed\Documents\GitHub\egm722\Week3\data_files\Counties.shp')
 wards = gpd.read_file(r'C:\Users\Ed\Documents\GitHub\egm722\Week3\data_files\NI_Wards.shp')
+# print(counties.crs) # check epsg
 # print(counties.crs == wards.crs) # test if the crs is the same for wards and counties.
-# print(counties)
+# print(counties) # shows table below, debug to see entire table
+
 # try to print the results to the screen using the format method demonstrated in the workbook
 # print(counties.head())
 
 # load the necessary data here and transform to a UTM projection
-#print(wards.crs) # check epsg
-counties_itm = counties.to_crs(epsg=2157) # convert counties to ITM
-wards_itm = wards.to_crs(epsg=2157) # convert wards to ITM
-#print(wards_itm)
-sum_population = wards_itm['Population'].sum() #calulcate total population from wards
-print('{:.2f} total population'.format(sum_population))
+counties = counties.to_crs(epsg=32629) # convert counties to UTM
+wards = wards.to_crs(epsg=32629) # convert wards to UTM
+
 
 # your analysis goes here...
-join = gpd.sjoin(counties_itm, wards_itm, how='inner', lsuffix='left', rsuffix='right') # perform the spatial join
-print(join) # show the joined table
-print(join.groupby(['CountyName'])['Population'].sum())
+sum_population = wards['Population'].sum() #calulcate total population from wards
+print('{:.2f} total population'.format(sum_population)) # print total population
+# print(wards.head())
+# print(counties.head())
+
+join = gpd.sjoin(counties, wards, how='inner', lsuffix='left', rsuffix='right') # perform the spatial join
+print(join) # show the joined table, appears to be duplicating/triplying data along county borders (total = 2213977)
+join_population = join['Population'].sum() # find total population in join GeoDataFrame
+print('{:} join population'.format(join_population))
+print(join.groupby(['CountyName'])['Population'].sum()) # summarise population total by CountyName
+print(sum_population / join_population) # check total population is same between GeoDataFrames
+
 
 # ---------------------------------------------------------------------------------------------------------------------
 # below here, you may need to modify the script somewhat to create your map.
@@ -71,4 +79,5 @@ county_handles = generate_handles([''], ['none'], edge='r')
 ax.legend(county_handles, ['County Boundaries'], fontsize=12, loc='upper left', framealpha=1)
 
 # save the figure
+plt.show()
 fig.savefig('sample_map_egm.png', dpi=300, bbox_inches='tight')

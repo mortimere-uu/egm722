@@ -22,23 +22,27 @@ plt.ion()
 # load datasets
 counties = gpd.read_file(r'C:\Users\Ed\Documents\GitHub\egm722\Week3\data_files\Counties.shp')
 wards = gpd.read_file(r'C:\Users\Ed\Documents\GitHub\egm722\Week3\data_files\NI_Wards.shp')
-# print(counties.crs == wards.crs) # test if the crs is the same for wards and counties.
-# print(counties)
+print(wards)
 # try to print the results to the screen using the format method demonstrated in the workbook
-# print(counties.head())
+
 
 # load the necessary data here and transform to a UTM projection
-#print(wards.crs) # check epsg
-counties_itm = counties.to_crs(epsg=2157) # convert counties to ITM
-wards_itm = wards.to_crs(epsg=2157) # convert wards to ITM
-#print(wards_itm)
-sum_population = wards_itm['Population'].sum() #calulcate total population from wards
-print('{:.2f} total population'.format(sum_population))
+
+
 
 # your analysis goes here...
-join = gpd.sjoin(counties_itm, wards_itm, how='inner', lsuffix='left', rsuffix='right') # perform the spatial join
-print(join) # show the joined table
-print(join.groupby(['CountyName'])['Population'].sum())
+# max_area = counties['Area_SqKM'].max()
+# min_area = counties['Area_SqKM'].min()
+# mean_area = counties['Area_SqKM'].mean()
+# print('Max area: {:.2f} km2'.format(max_area))
+# print('Min area: {:.2f} km2'.format(min_area))
+# print('Mean area: {:.2f} km2'.format(mean_area))
+# print('Sum area: {:.2f} km2'.format(counties['Area_SqKM'].sum()))
+
+#join = gpd.sjoin(counties, wards, how='inner', lsuffix='left', rsuffix='right') # perform the spatial join
+#print(join) # show the joined table, appears to be duplicating/triplying data along county borders (total = 2213977)
+#print(join.groupby(['CountyName'])['Population'].sum())
+
 
 # ---------------------------------------------------------------------------------------------------------------------
 # below here, you may need to modify the script somewhat to create your map.
@@ -71,4 +75,4 @@ county_handles = generate_handles([''], ['none'], edge='r')
 ax.legend(county_handles, ['County Boundaries'], fontsize=12, loc='upper left', framealpha=1)
 
 # save the figure
-fig.savefig('sample_map_egm.png', dpi=300, bbox_inches='tight')
+# fig.savefig('sample_map_egm.png', dpi=300, bbox_inches='tight')
