@@ -28,19 +28,25 @@ def scale_bar(ax, location=(0.92, 0.95)):
 
     plt.plot([sbx, sbx - 20000], [sby, sby], color='k', linewidth=9, transform=tmc)
     plt.plot([sbx, sbx - 10000], [sby, sby], color='k', linewidth=6, transform=tmc)
-    plt.plot([sbx-10000, sbx - 20000], [sby, sby], color='w', linewidth=6, transform=tmc)
+    plt.plot([sbx - 10000, sbx - 20000], [sby, sby], color='w', linewidth=6, transform=tmc)
 
-    plt.text(sbx, sby-4500, '20 km', transform=tmc, fontsize=8)
-    plt.text(sbx-12500, sby-4500, '10 km', transform=tmc, fontsize=8)
-    plt.text(sbx-24500, sby-4500, '0 km', transform=tmc, fontsize=8)
+    plt.text(sbx, sby - 4500, '20km', transform=tmc, fontsize=8)
+    plt.text(sbx - 12500, sby - 4500, '10km', transform=tmc, fontsize=8)
+    plt.text(sbx - 18750, sby - 4500, '5km', transform=tmc, fontsize=8)
+    plt.text(sbx - 24500, sby - 4500, '0km', transform=tmc, fontsize=8)
 
 
 # load the datasets
-outline = gpd.read_file('data_files/NI_outline.shp')
-towns = gpd.read_file('data_files/Towns.shp')
-water = gpd.read_file('data_files/Water.shp')
-rivers = gpd.read_file('data_files/Rivers.shp')
-counties = gpd.read_file('data_files/Counties.shp')
+outline = gpd.read_file(r'C:\Users\Ed\Documents\GitHub\egm722\Week2\data_files\NI_outline.shp')
+towns = gpd.read_file(r'C:\Users\Ed\Documents\GitHub\egm722\Week2\data_files\Towns.shp')
+water = gpd.read_file(r'C:\Users\Ed\Documents\GitHub\egm722\Week2\data_files\Water.shp')
+rivers = gpd.read_file(r'C:\Users\Ed\Documents\GitHub\egm722\Week2\data_files\Rivers.shp')
+counties = gpd.read_file(r'C:\Users\Ed\Documents\GitHub\egm722\Week2\data_files\Counties.shp')
+
+#def MyName():
+#    Ed = water[water['Area_km2'] > 10]
+#    print(Ed)
+
 
 # create a figure of size 10x10 (representing the page size in inches)
 myFig = plt.figure(figsize=(10, 10))
@@ -54,10 +60,10 @@ ax = plt.axes(projection=ccrs.Mercator())  # finally, create an axes object in t
 outline_feature = ShapelyFeature(outline['geometry'], myCRS, edgecolor='k', facecolor='w')
 
 xmin, ymin, xmax, ymax = outline.total_bounds
-ax.add_feature(outline_feature) # add the features we've created to the map.
+ax.add_feature(outline_feature)  # add the features we've created to the map.
 
 # using the boundary of the shapefile features, zoom the map to our area of interest
-ax.set_extent([xmin, xmax, ymin, ymax], crs=myCRS) # because total_bounds gives output as xmin, ymin, xmax, ymax,
+ax.set_extent([xmin, xmax, ymin, ymax], crs=myCRS)  # because total_bounds gives output as xmin, ymin, xmax, ymax,
 # but set_extent takes xmin, xmax, ymin, ymax, we re-order the coordinates here.
 
 # pick colors, add features to the map
@@ -94,7 +100,12 @@ river_feat = ShapelyFeature(rivers['geometry'], myCRS,
 ax.add_feature(river_feat)
 
 # ShapelyFeature creates a polygon, so for point data we can just use ax.plot()
-town_handle = ax.plot(towns.geometry.x, towns.geometry.y, 's', color='0.5', ms=6, transform=myCRS)
+# town_handle = ax.plot(towns.geometry.x, towns.geometry.y, 's', color='0.5', ms=6, transform=myCRS)
+# towns[towns['town_city'] == 0]
+town_handle = ax.plot(towns[towns['town_city'] == 0].geometry.x, towns[towns['town_city'] == 0].geometry.y, 's',
+                      color='0.5', ms=6, transform=myCRS)
+city_handle = ax.plot(towns[towns['town_city'] == 1].geometry.x, towns[towns['town_city'] == 1].geometry.y, 'D',
+                      color='r', ms=6, transform=myCRS)
 
 # generate a list of handles for the county datasets
 county_handles = generate_handles(counties.CountyName.unique(), county_colors, alpha=0.25)
@@ -109,11 +120,11 @@ river_handle = [mlines.Line2D([], [], color='royalblue')]  # have to make this a
 nice_names = [name.title() for name in county_names]
 
 # ax.legend() takes a list of handles and a list of labels corresponding to the objects you want to add to the legend
-handles = county_handles + water_handle + river_handle + town_handle
-labels = nice_names + ['Lakes', 'Rivers', 'Towns']
+handles = county_handles + water_handle + river_handle + town_handle + city_handle
+labels = nice_names + ['Lakes', 'Rivers', 'Towns', 'City']
 
 leg = ax.legend(handles, labels, title='Legend', title_fontsize=14,
-                 fontsize=12, loc='upper left', frameon=True, framealpha=1)
+                fontsize=12, loc='upper left', frameon=True, framealpha=1)
 
 gridlines = ax.gridlines(draw_labels=True,
                          xlocs=[-8, -7.5, -7, -6.5, -6, -5.5],
@@ -126,8 +137,10 @@ ax.set_extent([xmin, xmax, ymin, ymax], crs=myCRS)
 # add the text labels for the towns
 for i, row in towns.iterrows():
     x, y = row.geometry.x, row.geometry.y
-    plt.text(x, y, row['TOWN_NAME'].title(), fontsize=8, transform=myCRS) # use plt.text to place a label at x,y
+    plt.text(x, y, row['TOWN_NAME'].title(), fontsize=8, transform=myCRS)  # use plt.text to place a label at x,y
 
 scale_bar(ax)
 
-myFig.savefig('map.png', bbox_inches='tight', dpi=300)
+plt.show()
+
+myFig.savefig('map_town_cities_1205.png', bbox_inches='tight', dpi=300)
